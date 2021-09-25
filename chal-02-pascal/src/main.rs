@@ -1,13 +1,29 @@
 use std::io;
 
 struct Pascal {
-    rows: u64,
-    series: Vec<u64>,
+    rows: u32,
+    left: Vec<u32>,
+    right: Vec<u32>,
+    series: Vec<u32>,
 }
 
 impl Pascal {
-    fn next_row(&self, prev_row: u64) -> Vec<u64> {
-        let length = prev_row+1;
+    fn create(&mut self) {
+        let mut start = 1;
+        for i in 1..self.rows-1 {
+            println!("[DEBUG] {:?} {:?}", self.left, self.right);
+            for j in 0..self.left.len() { 
+                self.series.push(1);
+                self.series.push({
+                    self.left[j]+self.right[j]
+                });
+                self.series.push(1);
+            }
+            start += (i as usize)+1;
+            let end = start+(i as usize);
+            self.left = (self.series[start..end-1]).to_vec();
+            self.right = (self.series[start+1..end]).to_vec();
+        }
     }
 
     // print as a right triangle, aligned to left side
@@ -34,7 +50,7 @@ fn main() {
         .expect("somehow cannot read the input");
     
     // try to parse, if get an error 3 will be the iteration count
-    let n: u64 = match n.trim().parse() {
+    let n: u32 = match n.trim().parse() {
         Ok(x) => x,
         Err(_) => {
             3
@@ -43,17 +59,14 @@ fn main() {
     
     // clear line buffer
     //io::stdout().flush().unrwap();
-    let pascal = Pascal {
+    let mut pascal = Pascal {
         rows: n,
+        left: vec![1],
+        right: vec![1],
         series: vec![1, 1, 1],
     };
 
-    for i in 0..pascal.rows {
-        let new_row = pascal.next_row(i);
-        for x in pascal.series.iter() {
-            pascal.series.push(x);
-        }
-    }
+    pascal.create();
 
     pascal.pretty_print();
 }
